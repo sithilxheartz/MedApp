@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
-import User from "../../../models/User";       // <--- Changed this
-import connectDB from "../../../lib/db";      // <--- Changed this
+import User from "../../../models/User";      // <--- Changed to relative path
+import connectDB from "../../../lib/db";  // <--- Changed to relative path
 import bcrypt from "bcryptjs";
+
+// ... keep the rest of your code ...
+// ... keep the rest of your code ...
 
 export async function POST(req) {
   try {

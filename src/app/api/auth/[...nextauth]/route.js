@@ -1,8 +1,10 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import User from "@/models/User";
-import connectDB from "@/lib/db";
+import User from "../../../../models/User";   // <--- Note the extra ../ here
+import connectDB from "../../../../lib/db";  // <--- Note the extra ../ here
 import bcrypt from "bcryptjs";
+
+// ... keep the rest of your code ...
 
 // 1. Define the options in a variable and EXPORT it.
 // This allows other files (like the Admin API) to use these same security settings.

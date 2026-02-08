@@ -3,67 +3,75 @@ import { useEffect, useState } from "react";
 
 export default function UserList() {
   const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // 1. Fetch users when the page loads
+  // 1. Fetch users when the component loads
   useEffect(() => {
     fetch("/api/admin/users")
       .then((res) => res.json())
       .then((data) => {
-        // If we get an error (like "Not Authorized"), don't crash, just set empty
         if (Array.isArray(data)) {
           setUsers(data);
         }
-      });
+        setLoading(false);
+      })
+      .catch((err) => setLoading(false));
   }, []);
 
-  // 2. Function to change a user's role
+  // 2. Handle Role Change
   const handleChangeRole = async (userId, newRole) => {
+    // Optimistic UI update (change it instantly on screen)
+    setUsers(users.map(u => u._id === userId ? { ...u, role: newRole } : u));
+
     const res = await fetch("/api/admin/update-role", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: userId, newRole }),
     });
 
-    if (res.ok) {
-      alert("Role updated successfully!");
-      window.location.reload(); // Refresh to see changes
-    } else {
+    if (!res.ok) {
       alert("Failed to update role");
+      window.location.reload(); // Revert changes if server failed
     }
   };
 
+  if (loading) return <div className="text-slate-400 p-4">Loading users...</div>;
+
   return (
-    <div className="bg-white shadow-md rounded-lg overflow-hidden">
-      <table className="min-w-full leading-normal">
-        <thead>
+    <div className="overflow-x-auto bg-white rounded-lg border border-slate-200 shadow-sm mt-4">
+      <table className="min-w-full divide-y divide-slate-200">
+        <thead className="bg-slate-50">
           <tr>
-            <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-              Name
-            </th>
-            <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-              Email
-            </th>
-            <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-              Role
-            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Name</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Email</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Current Role</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Action</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody className="bg-white divide-y divide-slate-200">
           {users.map((user) => (
-            <tr key={user._id}>
-              <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                <p className="text-gray-900 whitespace-no-wrap">{user.name}</p>
+            <tr key={user._id} className="hover:bg-slate-50 transition">
+              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
+                {user.name}
               </td>
-              <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                <p className="text-gray-900 whitespace-no-wrap">{user.email}</p>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                {user.email}
               </td>
-              <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+              <td className="px-6 py-4 whitespace-nowrap">
+                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                  ${user.role === 'admin' ? 'bg-red-100 text-red-800' : 
+                    user.role === 'doctor' ? 'bg-green-100 text-green-800' : 
+                    'bg-blue-100 text-blue-800'}`}>
+                  {user.role.toUpperCase()}
+                </span>
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                 <select
                   value={user.role}
                   onChange={(e) => handleChangeRole(user._id, e.target.value)}
-                  className="block w-full bg-gray-200 border border-gray-200 text-gray-700 py-1 px-2 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                  className="block w-full max-w-xs pl-3 pr-10 py-2 text-base border-slate-300 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm rounded-md bg-white border cursor-pointer"
                 >
-                  <option value="customer">Customer</option>
+                  <option value="customer">Patient</option>
                   <option value="doctor">Doctor</option>
                   <option value="staff">Staff</option>
                   <option value="admin">Admin</option>

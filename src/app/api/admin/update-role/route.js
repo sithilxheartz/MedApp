@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import User from "@/models/User";
-import connectDB from "@/lib/db";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import User from "../../../../models/User";   // <--- Relative path
+import connectDB from "../../../../lib/db";  // <--- Relative path
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"; // Keep this one as @ if it works, or change to relative if it fails later.
 
 export async function PUT(req) {
   await connectDB();
